@@ -53,9 +53,9 @@ func (d *DB) GetAssessments(
 	}
 
 	if filter.EndDate != nil {
+		i++
 		where = append(where, fmt.Sprintf("date <= $%d", i))
 		args = append(args, *filter.EndDate)
-		i++
 	}
 
 	if len(where) > 0 {
