@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"wound_iq_api/internal/handlers"
+	"github.com/vellalasantosh/wound_iq_api/internal/handlers"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/gin-gonic/gin"

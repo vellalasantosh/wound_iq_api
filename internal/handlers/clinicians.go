@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"wound_iq_api/internal/models"
-	"wound_iq_api/internal/util"
+	"github.com/vellalasantosh/wound_iq_api/internal/models"
+	"github.com/vellalasantosh/wound_iq_api/internal/util"
 
 	"github.com/gin-gonic/gin"
 )

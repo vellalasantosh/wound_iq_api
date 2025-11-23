@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"wound_iq_api/internal/models"
+	"github.com/vellalasantosh/wound_iq_api/internal/models"
 )
 
 // IMPORTANT: this keeps database/sql import ACTIVE

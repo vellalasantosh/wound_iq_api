@@ -3,7 +3,7 @@ package router
 import (
 	"database/sql"
 
-	"wound_iq_api/internal/handlers"
+	"github.com/vellalasantosh/wound_iq_api/internal/handlers"
 
 	"github.com/gin-gonic/gin"
 )

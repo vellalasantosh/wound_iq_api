@@ -8,9 +8,9 @@ import (
 	"syscall"
 	"time"
 
-	"wound_iq_api/internal/config"
-	"wound_iq_api/internal/db"
-	"wound_iq_api/internal/router"
+	"github.com/vellalasantosh/wound_iq_api/internal/config"
+	"github.com/vellalasantosh/wound_iq_api/internal/db"
+	"github.com/vellalasantosh/wound_iq_api/internal/router"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
