@@ -1,0 +1,31 @@
+openapi: 3.0.1
+info:
+  title: Wound IQ API
+  version: "1.0"
+servers:
+  - url: http://localhost:8080/v1
+paths:
+  /patients:
+    get:
+      summary: List patients (paginated)
+    post:
+      summary: Create patient
+  /patients/{id}:
+    get:
+      summary: Get patient
+  /patients/{id}/history:
+    get:
+      summary: Get patient wound history
+  /clinicians:
+    get:
+      summary: List clinicians
+    post:
+      summary: Create clinician
+  /assessments:
+    get:
+      summary: List assessments (filters: patient_id, clinician_id, start_date, end_date)
+    post:
+      summary: Create full assessment (calls add_full_assessment)
+  /assessments/{id}/full:
+    get:
+      summary: Get assessment full (calls get_assessment_full)

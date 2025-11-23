@@ -1,0 +1,785 @@
+openapi: 3.0.3
+info:
+  title: Wound IQ API
+  version: "1.0.0"
+  description: |
+    Production-ready API for Wound IQ. Mode A: POST /v1/assessments calls the stored function add_full_assessment(...) and requires the full assessment payload (all wound tables).
+  contact:
+    name: Wound IQ Dev
+servers:
+  - url: http://localhost:8080/v1
+    description: Local development server
+externalDocs:
+  description: Database scripts (local paths)
+  url: file:///mnt/data/wound_iq_functions_corrected.sql
+tags:
+  - name: Patients
+    description: Patient CRUD and history
+  - name: Clinicians
+    description: Clinician CRUD
+  - name: Assessments
+    description: Assessment CRUD and reports
+
+paths:
+  /patients:
+    get:
+      tags: [Patients]
+      summary: List patients (paginated)
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Paginated list of patients
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPatientsResponse'
+    post:
+      tags: [Patients]
+      summary: Create a patient (calls add_patient)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatientInput'
+      responses:
+        '201':
+          description: Patient created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /patients/{id}:
+    get:
+      tags: [Patients]
+      summary: Get a patient by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Patient record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Patients]
+      summary: Update a patient
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatientInput'
+      responses:
+        '200':
+          description: Updated patient
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientResponse'
+    delete:
+      tags: [Patients]
+      summary: Delete a patient
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /patients/{id}/history:
+    get:
+      tags: [Patients]
+      summary: Get patient wound history (calls get_patient_wound_history)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Patient wound history
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientHistoryResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /clinicians:
+    get:
+      tags: [Clinicians]
+      summary: List clinicians (paginated)
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Paginated list of clinicians
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCliniciansResponse'
+    post:
+      tags: [Clinicians]
+      summary: Create clinician
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClinicianInput'
+      responses:
+        '201':
+          description: Clinician created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicianResponse'
+
+  /clinicians/{id}:
+    get:
+      tags: [Clinicians]
+      summary: Get clinician by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Clinician
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicianResponse'
+    put:
+      tags: [Clinicians]
+      summary: Update clinician
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClinicianInput'
+      responses:
+        '200':
+          description: Updated clinician
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicianResponse'
+    delete:
+      tags: [Clinicians]
+      summary: Delete clinician
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Deleted
+
+  /assessments:
+    get:
+      tags: [Assessments]
+      summary: List assessments (supports filters & pagination)
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: patient_id
+          in: query
+          schema:
+            type: integer
+        - name: clinician_id
+          in: query
+          schema:
+            type: integer
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: List of assessment summaries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssessmentSummaryListResponse'
+    post:
+      tags: [Assessments]
+      summary: Create a full assessment (calls add_full_assessment)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssessmentFullInput'
+            examples:
+              example-full:
+                value:
+                  clinician_id: 1
+                  patient_id: 1
+                  location: "Left Foot"
+                  etiology: "Diabetic Ulcer"
+                  depth_of_injury: "Partial Thickness"
+                  stage: "Stage II"
+                  chronicity: "Chronic"
+                  healing_status: "Slow Healing"
+                  return_to_clinic: true
+                  localized_symptoms: "Redness"
+                  systemic_symptoms: "None"
+                  pain_present: "Yes"
+                  pain_score: "4"
+                  culture_results: "Negative"
+                  antibiotic: "None"
+                  granulation_percent: 40
+                  epithelial_percent: 20
+                  slough_percent: 30
+                  eschar_percent: 5
+                  necrotic_percent: 5
+                  debridement: "Sharp"
+                  blood_pressure: "138/88"
+                  temperature: 37.1
+                  pulse: 78
+                  respiration_rate: 18
+                  oxygen_saturation: 95
+                  w_length: 2.5
+                  w_width: 2.0
+                  w_depth: 0.5
+                  w_tunneling: false
+                  undermining: false
+                  edges: "Attached"
+                  skin_condition: "Dry"
+                  edema: "Mild"
+                  blister: "No"
+                  exudate_type: "Serous"
+                  exudate_amount: "Low"
+                  odor: "None"
+                  primary_dressing: "Foam"
+                  secondary_dressing: "Gauze"
+                  tertiary_dressing: "Bandage"
+                  frequency: "Daily"
+                  supplies: "Saline, Dressing pack"
+                  orders: "Monitor glucose levels"
+      responses:
+        '201':
+          description: Created assessment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssessmentResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /assessments/{id}:
+    get:
+      tags: [Assessments]
+      summary: Get assessment (base table fields)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Assessment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssessmentResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Assessments]
+      summary: Update base assessment (assessment table only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssessmentUpdateInput'
+      responses:
+        '200':
+          description: Updated assessment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssessmentResponse'
+    delete:
+      tags: [Assessments]
+      summary: Delete an assessment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Deleted
+
+  /assessments/{id}/full:
+    get:
+      tags: [Assessments]
+      summary: Get full assessment report (calls get_assessment_full)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Full assessment report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssessmentFullReport'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  responses:
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadRequest:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+      example:
+        error: "invalid request"
+
+    PatientInput:
+      type: object
+      required: [full_name, date_of_birth, gender, medical_record_number]
+      properties:
+        full_name:
+          type: string
+        date_of_birth:
+          type: string
+          format: date-time
+        gender:
+          type: string
+        medical_record_number:
+          type: string
+      example:
+        full_name: "Ravi Kumar"
+        date_of_birth: "1985-07-12T00:00:00Z"
+        gender: "Male"
+        medical_record_number: "MRN001"
+
+    PatientResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Patient'
+    Patient:
+      type: object
+      properties:
+        patient_id:
+          type: integer
+        full_name:
+          type: string
+        date_of_birth:
+          type: string
+          format: date-time
+        gender:
+          type: string
+        medical_record_number:
+          type: string
+      example:
+        patient_id: 1
+        full_name: "Ravi Kumar"
+        date_of_birth: "1985-07-12T00:00:00Z"
+        gender: "Male"
+        medical_record_number: "MRN001"
+
+    PaginatedPatientsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Patient'
+        page:
+          type: integer
+        page_size:
+          type: integer
+
+    ClinicianInput:
+      type: object
+      required: [full_name, role, department, contact_info, license_number]
+      properties:
+        full_name: { type: string }
+        role: { type: string }
+        department: { type: string }
+        contact_info: { type: string }
+        license_number: { type: string }
+      example:
+        full_name: "Dr. Rohan Singh"
+        role: "Physician"
+        department: "Wound Care"
+        contact_info: "9876543210"
+        license_number: "LIC1001"
+
+    Clinician:
+      type: object
+      properties:
+        clinician_id: { type: integer }
+        full_name: { type: string }
+        role: { type: string }
+        department: { type: string }
+        contact_info: { type: string }
+        license_number: { type: string }
+      example:
+        clinician_id: 1
+        full_name: "Dr. Rohan Singh"
+        role: "Physician"
+        department: "Wound Care"
+        contact_info: "9876543210"
+        license_number: "LIC1001"
+
+    ClinicianResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Clinician'
+
+    PaginatedCliniciansResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Clinician'
+        page:
+          type: integer
+        page_size:
+          type: integer
+
+    AssessmentFullInput:
+      type: object
+      required:
+        - clinician_id
+        - patient_id
+        - location
+        - etiology
+        - depth_of_injury
+        - stage
+        - chronicity
+        - healing_status
+      properties:
+        clinician_id: { type: integer }
+        patient_id: { type: integer }
+        location: { type: string }
+        etiology: { type: string }
+        depth_of_injury: { type: string }
+        stage: { type: string }
+        chronicity: { type: string }
+        healing_status: { type: string }
+        return_to_clinic: { type: boolean }
+
+        localized_symptoms: { type: string }
+        systemic_symptoms: { type: string }
+        pain_present: { type: string }
+        pain_score: { type: string }
+        culture_results: { type: string }
+        antibiotic: { type: string }
+
+        granulation_percent: { type: integer }
+        epithelial_percent: { type: integer }
+        slough_percent: { type: integer }
+        eschar_percent: { type: integer }
+        necrotic_percent: { type: integer }
+        debridement: { type: string }
+
+        blood_pressure: { type: string }
+        temperature: { type: number, format: float }
+        pulse: { type: integer }
+        respiration_rate: { type: integer }
+        oxygen_saturation: { type: integer }
+
+        w_length: { type: number, format: float }
+        w_width: { type: number, format: float }
+        w_depth: { type: number, format: float }
+        w_tunneling: { type: boolean }
+        undermining: { type: boolean }
+        edges: { type: string }
+        skin_condition: { type: string }
+        edema: { type: string }
+        blister: { type: string }
+
+        exudate_type: { type: string }
+        exudate_amount: { type: string }
+        odor: { type: string }
+
+        primary_dressing: { type: string }
+        secondary_dressing: { type: string }
+        tertiary_dressing: { type: string }
+        frequency: { type: string }
+        supplies: { type: string }
+        orders: { type: string }
+      example:
+        clinician_id: 1
+        patient_id: 1
+        location: "Left Foot"
+        etiology: "Diabetic Ulcer"
+        depth_of_injury: "Partial Thickness"
+        stage: "Stage II"
+        chronicity: "Chronic"
+        healing_status: "Slow Healing"
+        return_to_clinic: true
+        localized_symptoms: "Redness"
+        systemic_symptoms: "None"
+        pain_present: "Yes"
+        pain_score: "4"
+        culture_results: "Negative"
+        antibiotic: "None"
+        granulation_percent: 40
+        epithelial_percent: 20
+        slough_percent: 30
+        eschar_percent: 5
+        necrotic_percent: 5
+        debridement: "Sharp"
+        blood_pressure: "138/88"
+        temperature: 37.1
+        pulse: 78
+        respiration_rate: 18
+        oxygen_saturation: 95
+        w_length: 2.5
+        w_width: 2.0
+        w_depth: 0.5
+        w_tunneling: false
+        undermining: false
+        edges: "Attached"
+        skin_condition: "Dry"
+        edema: "Mild"
+        blister: "No"
+        exudate_type: "Serous"
+        exudate_amount: "Low"
+        odor: "None"
+        primary_dressing: "Foam"
+        secondary_dressing: "Gauze"
+        tertiary_dressing: "Bandage"
+        frequency: "Daily"
+        supplies: "Saline, Dressing pack"
+        orders: "Monitor glucose levels"
+
+    AssessmentUpdateInput:
+      type: object
+      properties:
+        clinician_id: { type: integer }
+        patient_id: { type: integer }
+        location: { type: string }
+        etiology: { type: string }
+        depth_of_injury: { type: string }
+        stage: { type: string }
+        chronicity: { type: string }
+        healing_status: { type: string }
+        return_to_clinic: { type: boolean }
+
+    Assessment:
+      type: object
+      properties:
+        assessment_id: { type: integer }
+        clinician_id: { type: integer }
+        patient_id: { type: integer }
+        date:
+          type: string
+          format: date-time
+        location: { type: string }
+        etiology: { type: string }
+        depth_of_injury: { type: string }
+        stage: { type: string }
+        chronicity: { type: string }
+        healing_status: { type: string }
+        return_to_clinic: { type: boolean }
+      example:
+        assessment_id: 1
+        clinician_id: 3
+        patient_id: 1
+        date: "2025-01-01T10:00:00Z"
+        location: "Left Foot"
+        etiology: "Diabetic Ulcer"
+        depth_of_injury: "Partial Thickness"
+        stage: "Stage II"
+        chronicity: "Chronic"
+        healing_status: "Slow Healing"
+        return_to_clinic: true
+
+    AssessmentResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Assessment'
+
+    AssessmentSummaryListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AssessmentSummary'
+        page:
+          type: integer
+        page_size:
+          type: integer
+
+    AssessmentSummary:
+      type: object
+      properties:
+        assessment_id: { type: integer }
+        date:
+          type: string
+          format: date-time
+        patient_name: { type: string }
+        clinician_name: { type: string }
+        location: { type: string }
+
+    PatientHistoryResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              assessment_id: { type: integer }
+              assessment_date:
+                type: string
+                format: date-time
+              location: { type: string }
+              stage: { type: string }
+              healing_status: { type: string }
+
+    AssessmentFullReport:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            assessment_id: { type: integer }
+            assessment_date:
+              type: string
+              format: date-time
+            patient_name: { type: string }
+            clinician_name: { type: string }
+            location: { type: string }
+            stage: { type: string }
+            healing_status: { type: string }
+            pain_score: { type: string }
+            granulation_percent: { type: integer }
+            w_length:
+              type: number
+              format: float
+            w_width:
+              type: number
+              format: float
+      example:
+        data:
+          assessment_id: 1
+          assessment_date: "2025-01-01T10:00:00Z"
+          patient_name: "Ravi Kumar"
+          clinician_name: "Dr. Rohan Singh"
+          location: "Left Foot"
+          stage: "Stage II"
+          healing_status: "Slow Healing"
+          pain_score: "4"
+          granulation_percent: 40
+          w_length: 2.5
+          w_width: 2.0
+

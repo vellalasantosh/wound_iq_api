@@ -1,0 +1,73 @@
+{
+  "info": {
+    "name": "Wound IQ API",
+    "_postman_id": "d1e5cf2d-9a5a-4f08-bc25-111111111111",
+    "description": "Complete Postman collection for Wound IQ API (Mode A).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Patients",
+      "item": [
+        {
+          "name": "List Patients",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:8080/v1/patients?page=1&page_size=20"
+          }
+        },
+        {
+          "name": "Create Patient",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\"full_name\": \"John Test\",\n\"date_of_birth\": \"1980-01-01T00:00:00Z\",\n\"gender\": \"Male\",\n\"medical_record_number\": \"MRNTEST\"\n}"
+            },
+            "url": "http://localhost:8080/v1/patients"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Clinicians",
+      "item": [
+        {
+          "name": "List Clinicians",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:8080/v1/clinicians"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Assessments",
+      "item": [
+        {
+          "name": "Create Full Assessment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\"clinician_id\": 1,\n\"patient_id\": 1,\n\"location\": \"Left Foot\",\n\"etiology\": \"Diabetic Ulcer\",\n\"depth_of_injury\": \"Partial Thickness\",\n\"stage\": \"Stage II\",\n\"chronicity\": \"Chronic\",\n\"healing_status\": \"Slow Healing\",\n\"return_to_clinic\": true\n}"
+            },
+            "url": "http://localhost:8080/v1/assessments"
+          }
+        }
+      ]
+    }
+  ]
+}
