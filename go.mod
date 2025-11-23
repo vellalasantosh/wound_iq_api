@@ -1,4 +1,4 @@
-module wound_iq_api
+module github.com/vellalasantosh/wound_iq_api
 
 go 1.22
 
